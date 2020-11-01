@@ -1,0 +1,98 @@
+---
+title: "a3_task3_travis_christy"
+author: "Travis Christy"
+date: "11/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(janitor)
+library(here)
+library(kableExtra)
+library(lubridate)
+```
+
+#### Reading in urchins.csv using here()
+
+```{r}
+urchins_tc <- read_csv(here("data", "urchins.csv")) %>% 
+  clean_names()
+```
+
+#### Section 1: Exploratory Data Visualization
+
+Using histograms, boxplots, and summary tables to compare the size of red urchins and purple urchins.
+
+```{r}
+ggplot(data = urchins_tc, aes(x = size)) +
+  geom_histogram(bins = 15) +
+  labs(x = "Urchin Diameter (cm)", y = "Total Urchins") +
+  facet_wrap(~common_name)
+```
+
+
+```{r}
+ggplot(data = urchins_tc, aes(x = common_name, y = size)) +
+  geom_boxplot() +
+  labs(x = "Species", y = "Urchin Diameter (cm)")
+```
+
+
+
+Now I will use data wrangling techniques (group_by and summarize)to get a data set that will work for the tables.
+
+```{r}
+urchins_summary <- urchins_tc %>% 
+  group_by(common_name) %>% 
+  summarize(mean_size = mean(size, na.rm = TRUE),
+            median_size = median(size, na.rm = TRUE),
+            sd_size = sd(size, na.rm = TRUE),
+            sampe_size = n())
+
+kbl(urchins_summary) %>% 
+   kable_material("hover", full_width = F)
+```
+
+From the data and tables we can see a number of key takeways:
+1. Red urchins are, on average, larger than purple urchins.
+2. The size distribution is greater with red urchins than with purple urchins
+
+
+### Section 2. Explore purple urchin counts bbyb site and year.
+
+```{r}
+purple_urchins <- urchins_tc %>% 
+  filter(common_name == "Purple Urchin") %>% 
+  mutate(Date = mdy(date)) %>% 
+  mutate(year = year(Date)) %>% 
+  mutate(site_full = case_when(
+    site == "NAPL" ~ "Naples Reef",
+    site == "AQUE" ~ "Arroyo Quemado Reef",
+    site == "CARP" ~ "Carpinteria Reef",
+    site == "MOHK" ~ "Mohawk Reef",
+    site == "IVEE" ~ "Isla Vista Reef"))
+```
+
+```{r}
+purple_urchins_counts <- purple_urchins %>% 
+  count(year, site_full)
+```
+
+```{r}
+ggplot(data = purple_urchins_counts, aes(x = year, y = n, color = site_full)) +
+  geom_line() +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
