@@ -14,20 +14,26 @@ library(kableExtra)
 library(lubridate)
 ```
 
-#### Reading in urchins.csv using here()
+
+**CITATION**: Reed, D. 2020. SBC LTER: Reef: Long-term experiment: Kelp removal: Urchin size frequency distribution ver 20. Environmental Data Initiative. [URL LINK](https://doi.org/10.6073/pasta/5a1e9ef03aa47bd2225c0bb98a02a63b) 
+
+
+#### Task 3 Section 1: Size comparisons of red and purple urchins.
+
+Reading in urchins.csv using here()
 
 ```{r}
 urchins_tc <- read_csv(here("data", "urchins.csv")) %>% 
   clean_names()
 ```
 
-#### Section 1: Exploratory Data Visualization
+##### Section 1.i Exploratory Data Visualization
 
-Using histograms, boxplots, and summary tables to compare the size of red urchins and purple urchins.
+Distribution of sizes between red and purple urchins represented by histograms and boxplots.
 
 ```{r}
 ggplot(data = urchins_tc, aes(x = size)) +
-  geom_histogram(bins = 15) +
+  geom_histogram(bins = 20) +
   labs(x = "Urchin Diameter (cm)", y = "Total Urchins") +
   facet_wrap(~common_name)
 ```
@@ -40,8 +46,9 @@ ggplot(data = urchins_tc, aes(x = common_name, y = size)) +
 ```
 
 
+##### Section 1.ii Descriptive statistics table:
 
-Now I will use data wrangling techniques (group_by and summarize)to get a data set that will work for the tables.
+Using data wrangling techniques (group_by and summarize) to get a data set containing summary statistics for red and purple urchins.
 
 ```{r}
 urchins_summary <- urchins_tc %>% 
@@ -49,18 +56,29 @@ urchins_summary <- urchins_tc %>%
   summarize(mean_size = mean(size, na.rm = TRUE),
             median_size = median(size, na.rm = TRUE),
             sd_size = sd(size, na.rm = TRUE),
-            sampe_size = n())
+            sample_size = n())
 
 kbl(urchins_summary) %>% 
    kable_material("hover", full_width = F)
+
+p_urchin_median_size <- urchins_summary[1,3]
+r_urchin_median_size <- urchins_summary[2,3]
+
+urchin_actual_size_diff <- r_urchin_median_size - p_urchin_median_size
+urchin_median_size_diff <- 100*(r_urchin_median_size - p_urchin_median_size)/r_urchin_median_size
 ```
 
-From the data and tables we can see a number of key takeways:
-1. Red urchins are, on average, larger than purple urchins.
-2. The size distribution is greater with red urchins than with purple urchins
+##### Section 1.iii Key takeways for size comparisons between the two urchin species:
+
+- The histogram for purple urchins looks to have a combination distribution that is positively skewed. The kurtosis is leptokurtic, suggesting less dispersion in the purple urchin population size compared to the red urchin population.
+- The histogram for red urchins shows a relatively normal distribution, however a flatter curve suggests the population is more dispersed in size than it is for purple urchins.
+- The median size value (central tendency) for purple urchins vs red urchins (`r p_urchin_median_size` cm vs `r r_urchin_median_size` cm) suggests that on average red urchins are `r round(urchin_median_size_diff)`% larger or a difference of `r urchin_actual_size_diff` cm.
+- According to the standard deviation values in the data tables, we can confirm what we saw in the graphs -- red urchin size is more dispersed than purple urchin size throughout the population.
 
 
-### Section 2. Explore purple urchin counts bbyb site and year.
+#### Section 2. Explore purple urchin counts by site and year.
+
+##### Section 2.i
 
 ```{r}
 purple_urchins <- urchins_tc %>% 
@@ -75,10 +93,17 @@ purple_urchins <- urchins_tc %>%
     site == "IVEE" ~ "Isla Vista Reef"))
 ```
 
+##### Section 2.ii
+
 ```{r}
 purple_urchins_counts <- purple_urchins %>% 
   count(year, site_full)
+
+kbl(purple_urchins_counts) %>% 
+   kable_material("hover", full_width = F)
 ```
+
+#### Section 2.iii
 
 ```{r}
 ggplot(data = purple_urchins_counts, aes(x = year, y = n, color = site_full)) +

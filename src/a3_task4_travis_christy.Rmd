@@ -1,0 +1,89 @@
+---
+title: "a3_task4_travis_christy"
+author: "Travis Christy"
+date: "11/1/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(janitor)
+library(here)
+library(kableExtra)
+library(lubridate)
+```
+
+#### Reading in urchins.csv using here()
+
+```{r}
+urchins_task4 <- read_csv(here("data", "urchins.csv")) %>% 
+  clean_names()
+```
+
+#### Data wrangling for Part 3
+
+```{r}
+urchinsp_both_napl_2010 <- urchins_task4 %>% 
+  filter(common_name == "Purple Urchin") %>% 
+  mutate(Date = mdy(date)) %>% 
+  mutate(year = year(Date)) %>%
+  mutate(month = month(Date)) %>% 
+  filter(year == 2010, month == 1, site == "NAPL")
+
+urchinsp_c_napl_2010 <- urchins_task4 %>% 
+  filter(common_name == "Purple Urchin") %>% 
+  mutate(Date = mdy(date)) %>% 
+  mutate(year = year(Date)) %>%
+  mutate(month = month(Date)) %>% 
+  filter(year == 2010, month == 1, treatment == "CONTROL")
+
+urchinsp_a_napl_2010 <- urchins_task4 %>% 
+  filter(common_name == "Purple Urchin") %>% 
+  mutate(Date = mdy(date)) %>% 
+  mutate(year = year(Date)) %>%
+  mutate(month = month(Date)) %>% 
+  filter(year == 2010, month == 1, treatment == "ANNUAL")
+```
+
+#### 3.b Graphs
+
+```{r}
+ggplot(data = urchinsp_both_napl_2010, aes(x = size)) +
+  geom_histogram() +
+  facet_wrap(~ treatment)
+```
+```{r}
+ggplot(data = urchinsp_both_napl_2010, aes(sample = size)) +
+  geom_qq() +
+  facet_wrap(~ treatment)
+```
+
+
+```{r}
+urchins_summary_annual <- urchinsp_both_napl_2010 %>% 
+  group_by(treatment) %>% 
+  summarize(mean_size = mean(size, na.rm = TRUE),
+            median_size = median(size, na.rm = TRUE),
+            sd_size = sd(size, na.rm = TRUE),
+            sampe_size = n())
+
+kbl(urchins_summary_annual) %>% 
+  kable_material("hover", full_width = F)
+```
+
+#### Two Sample T-Test
+
+```{r}
+annual_urch <- urchinsp_both_napl_2010 %>% 
+  filter(treatment == "ANNUAL") %>% 
+  pull(size)
+
+control_urch <- urchinsp_both_napl_2010 %>% 
+  filter(treatment == "CONTROL") %>% 
+  pull(size)
+
+t.test(annual_urch, control_urch)
+
+```
+
