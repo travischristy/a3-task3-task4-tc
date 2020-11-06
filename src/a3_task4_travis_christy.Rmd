@@ -15,7 +15,9 @@ library(lubridate)
 ```
 
 **CITATION**: Reed, D. 2020. SBC LTER: Reef: Long-term experiment: Kelp removal: Urchin size frequency distribution ver 20. Environmental Data Initiative. [URL LINK](https://doi.org/10.6073/pasta/5a1e9ef03aa47bd2225c0bb98a02a63b) 
-
+  
+***** 
+  
 #### Task 4
 
 ##### Reading in urchins.csv using here()
@@ -24,8 +26,9 @@ library(lubridate)
 urchins_task4 <- read_csv(here("data", "urchins.csv")) %>% 
   clean_names()
 ```
-
-##### Data wrangling for Part 3.a
+    
+    
+##### Data wrangling for Part 3.a:
 
 ```{r}
 urchinsp_both_napl_2010 <- urchins_task4 %>% 
@@ -49,24 +52,34 @@ urchinsp_a_napl_2010 <- urchins_task4 %>%
   mutate(month = month(Date)) %>% 
   filter(year == 2010, month == 1, treatment == "ANNUAL")
 ```
-
-##### 3.b Graphs
+  
+*****  
+  
+##### 3.b Exploring Data with Histograms and QQ Plots:
 
 ```{r}
 ggplot(data = urchinsp_both_napl_2010, aes(x = size)) +
   geom_histogram(bins = 7) + ## bin number using Juran's guidelines for n= 60 is 7
   facet_wrap(~ treatment)
 ```
-
+```{r}
+ggplot(data = urchinsp_both_napl_2010, aes(x = treatment, y = size)) +
+  geom_boxplot()
+```
 
 ```{r}
 ggplot(data = urchinsp_both_napl_2010, aes(sample = size)) +
   geom_qq() +
   facet_wrap(~ treatment)
 ```
-*Main Takeaways:*
 
- - It seems like the distribution of both group "annual" and "control" have combination distributions. Each observation has a lot of variance from the central tendencies. The QQ plots are showing that observations from both treatments are distributed relatively the same.
+**Discussion:**
+
+ It seems like the distribution of both group "annual" and "control" have combination distributions, but not of equal variance. Each observation has a lot of variance from the central tendencies. The QQ plots are showing that observations from both treatments are distributed relatively the same. If we're unsure about equal variance, we can use the Welch Two Sample T-Test to test the null hypothesis.
+ 
+ ******
+ 
+##### Summary Statistics Table:
 
 ```{r}
 urchins_summary_annual <- urchinsp_both_napl_2010 %>% 
@@ -79,7 +92,9 @@ urchins_summary_annual <- urchinsp_both_napl_2010 %>%
 kbl(urchins_summary_annual) %>% 
   kable_material("hover", full_width = F)
 ```
-
+  
+******
+  
 #### Two Sample T-Test
 
 ```{r}
@@ -95,7 +110,7 @@ t.test(annual_urch, control_urch)
 
 ```
 
-*Discussion:*
+**Discussion:**
 
 The mean purple urchin size from the annual kelp removal sample is 3.92 cm and from the control (aka no kelp removal) group is 3.73 cm. The difference in means is 0.19 cm, which is less than 5% overall change. Furthermore, there is a lot of overlap between the two distributions as standard deviation sizes are comparatively similar. Considering this information  plus the p-value result of the two sample t-test of .25, there is not a significant amount of evidence to suggest that these two samples were drawn from populations with different size means.
 
